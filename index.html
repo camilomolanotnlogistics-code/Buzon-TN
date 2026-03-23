@@ -5,251 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buzón de Novedades - TN Logistics</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Firebase SDKs para persistencia inmediata y anónima -->
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
-
     <style>
         body { font-family: 'Urbanist', sans-serif; background-color: #0f172a; color: #f8fafc; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .motivational-text { font-family: 'Urbanist', sans-serif; font-weight: 800; }
+        input, textarea, select { background: #1e293b !important; border: 1px solid #334155 !important; color: white !important; }
+        input:focus, textarea:focus, select:focus { border-color: #38bdf8 !important; outline: none; ring: 2px; ring-color: #38bdf8; }
         
-        input, textarea, select { 
-            background: #1e293b !important; 
-            border: 1px solid #334155 !important; 
-            color: white !important; 
-            font-size: 16px !important;
-        }
-
-        #qrcode img { display: block; margin: 0 auto; border-radius: 1.5rem; }
-
-        @media print {
-            .no-print { display: none !important; }
-            .print-area { display: block !important; color: black !important; background: white !important; width: 100% !important; }
-            body { background: white !important; }
-            .glass { background: white !important; border: 2px solid #000 !important; }
-            #qrcode { border: 2px solid #000 !important; padding: 10px !important; }
+        .logo-img {
+            max-height: 80px;
+            width: auto;
+            filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.3));
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center p-4 md:p-8">
 
-    <!-- Header No-Print -->
-    <div class="w-full max-w-2xl mb-8 text-center no-print">
+    <!-- Encabezado Corporativo -->
+    <div class="w-full max-w-2xl mb-8 text-center flex flex-col items-center">
         <div class="mb-4">
-            <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center text-white text-3xl font-bold mx-auto shadow-lg shadow-blue-500/20">TN</div>
+            <img src="TN_logo.png" alt="TN Logistics Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/200x80/1e293b/38bdf8?text=TN+Logistics'">
         </div>
-        <h1 class="text-3xl font-bold text-white mb-1 uppercase tracking-tighter">TN Logistics</h1>
-        <p class="text-blue-400 font-semibold uppercase tracking-widest text-xs italic">Buzón de Mejora Continua</p>
+        <h1 class="text-4xl font-bold text-white mb-2 uppercase tracking-tighter">TN Logistics</h1>
+        <p class="text-sky-400 font-semibold uppercase tracking-widest text-sm">Sistema de Gestión de Calidad</p>
+        <div class="h-1 w-20 bg-sky-500 mx-auto mt-4 rounded-full"></div>
     </div>
 
-    <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+    <div class="w-full max-w-2xl">
         
-        <!-- Formulario de Registro -->
-        <div class="glass p-8 rounded-[2.5rem] shadow-2xl no-print border-t-4 border-blue-500">
-            <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-                <i class="fa-solid fa-pen-nib text-blue-400"></i>
-                Registrar Novedad o Sugerencia
-            </h2>
+        <!-- Formulario de Registro de Novedades -->
+        <div class="glass p-8 rounded-3xl shadow-2xl border-t-4 border-sky-500">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold flex items-center gap-2">
+                    <span class="text-sky-400">01.</span> Registro de Novedad
+                </h2>
+                <i class="fa-solid fa-clipboard-check text-sky-500 text-xl"></i>
+            </div>
             
-            <form id="noveltyForm" class="space-y-5">
+            <form id="noveltyForm" class="space-y-6">
+                <!-- Información Básica -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Fecha</label>
-                        <input type="date" id="eventDate" required class="w-full p-4 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Fecha del Evento</label>
+                        <input type="date" id="eventDate" required class="w-full p-4 rounded-xl text-sm transition-all">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Nombre (Opcional)</label>
-                        <input type="text" id="userName" placeholder="Anónimo" class="w-full p-4 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Tu Nombre (Opcional)</label>
+                        <input type="text" id="userName" placeholder="Reporte Anónimo" class="w-full p-4 rounded-xl text-sm transition-all">
                     </div>
                 </div>
 
+                <!-- Clasificación (Actualizada y Ordenada Alfabéticamente) -->
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Departamento Destino</label>
-                    <select id="targetDept" required class="w-full p-4 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
-                        <option value="">Seleccione el departamento...</option>
-                        <option value="Calidad">Calidad (ISO/C-TPAT)</option>
-                        <option value="Operaciones">Operaciones / Patio</option>
-                        <option value="RH">Recursos Humanos</option>
-                        <option value="Direccion">Dirección General</option>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Departamento Responsable</label>
+                    <select id="targetDept" required class="w-full p-4 rounded-xl text-sm transition-all cursor-pointer">
+                        <option value="">Seleccionar departamento...</option>
+                        <option value="Almacen">Almacén</option>
+                        <option value="Calidad">Calidad</option>
+                        <option value="Customer Service">Customer Service</option>
+                        <option value="Finanzas">Finanzas</option>
+                        <option value="Monitoreo">Monitoreo</option>
+                        <option value="Otro">Otro</option>
+                        <option value="Pricing">Pricing</option>
+                        <option value="Recursos Humanos">Recursos Humanos</option>
+                        <option value="Trafico">Tráfico</option>
+                        <option value="Ventas">Ventas</option>
                     </select>
                 </div>
 
+                <!-- Detalle -->
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Descripción</label>
-                    <textarea id="description" rows="4" required placeholder="Escribe aquí tu sugerencia o novedad..." class="w-full p-4 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"></textarea>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Descripción Detallada</label>
+                    <textarea id="description" rows="5" required placeholder="Describe lo ocurrido o tu propuesta de mejora..." class="w-full p-4 rounded-xl text-sm transition-all resize-none"></textarea>
                 </div>
 
-                <!-- Foto Sin Registro -->
-                <div class="p-5 bg-slate-800/50 rounded-[2rem] border-2 border-dashed border-slate-700">
-                    <label class="block text-[10px] font-black text-blue-400 uppercase mb-3 tracking-widest text-center">Evidencia Fotográfica (Opcional)</label>
-                    <div class="flex flex-col items-center gap-4">
-                        <label for="photoInp" class="w-full bg-slate-900 hover:bg-slate-700 text-white text-center py-4 rounded-2xl text-xs font-black cursor-pointer transition border border-slate-700">
-                            <i class="fa-solid fa-camera mr-2 text-blue-400"></i> SUBIR O TOMAR FOTO
+                <!-- Evidencia -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Evidencia Fotográfica (Opcional)</label>
+                    <div class="flex items-center justify-center w-full">
+                        <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-600 rounded-2xl cursor-pointer hover:border-sky-500 hover:bg-slate-800 transition-all group">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <i class="fa-solid fa-camera text-3xl mb-2 text-slate-500 group-hover:text-sky-500 transition-colors"></i>
+                                <p class="mb-1 text-sm text-slate-400 font-semibold uppercase tracking-tight">Capturar o Subir Foto</p>
+                                <p class="text-[10px] text-slate-500" id="fileCount">Formatos: JPG, PNG</p>
+                            </div>
+                            <input type="file" id="photos" accept="image/*" multiple class="hidden" onchange="updateFileName()" />
                         </label>
-                        <input type="file" id="photoInp" accept="image/*" class="hidden">
-                        <div id="prevBox" class="hidden relative w-full h-48 rounded-2xl bg-black border border-slate-600 overflow-hidden shadow-2xl">
-                            <img id="imgPrev" class="w-full h-full object-contain">
-                            <button type="button" onclick="removePhoto()" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
                     </div>
                 </div>
 
-                <div id="loadMsg" class="hidden text-center py-2 text-xs text-blue-400 font-black animate-pulse uppercase tracking-widest">
-                    Enviando a la nube de TN...
-                </div>
-
-                <button type="submit" id="subBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-[2rem] shadow-xl transition-all active:scale-95 uppercase tracking-widest text-sm">
-                    Enviar Reporte
+                <!-- Botón de Envío -->
+                <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-black py-5 rounded-2xl shadow-xl transition-all transform hover:scale-[1.02] active:scale-95 uppercase tracking-widest flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    Enviar Reporte a Calidad
                 </button>
             </form>
         </div>
 
-        <!-- Área de Cartel y QR -->
-        <div class="glass p-10 rounded-[3rem] text-center flex flex-col justify-center border-2 border-slate-800 print-area relative">
-            
-            <!-- Configurador de URL (Solo visible en pantalla para ti) -->
-            <div class="no-print mb-8 p-4 bg-blue-900/30 rounded-2xl border border-blue-500/30 text-left">
-                <label class="block text-[9px] font-black text-blue-300 uppercase mb-2">Configuración de Difusión:</label>
-                <div class="flex gap-2">
-                    <input type="text" id="publicUrl" placeholder="Pega aquí el enlace de compartir..." class="flex-1 text-[10px] p-2 rounded-lg bg-slate-900 border-slate-700">
-                    <button onclick="updateQR()" class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded-lg font-bold">Actualizar QR</button>
-                </div>
-                <p class="text-[8px] text-slate-500 mt-2 italic">Si el QR falla, pega el enlace de "Compartir" de este documento aquí.</p>
-            </div>
+        <div class="mt-8 text-center text-slate-500 text-xs italic">
+            TN Logistics - Gestión Operativa y Mejora Continua
+        </div>
+    </div>
 
-            <div id="qrcode" class="bg-white p-8 rounded-[3rem] shadow-2xl inline-block mx-auto mb-10 border-4 border-blue-600"></div>
-            
-            <div class="max-w-md mx-auto">
-                <p class="motivational-text text-2xl md:text-3xl italic leading-tight text-white mb-8">
-                    "Tu voz es la clave de nuestra excelencia. Reporta con confianza, construyamos juntos una empresa más segura y eficiente."
-                </p>
-                <div class="h-1.5 w-16 bg-blue-600 mx-auto mb-8 rounded-full"></div>
-                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-[0.2em] leading-relaxed">
-                    Tu reporte es 100% anónimo y llega directamente al Departamento de Calidad.
-                </p>
+    <!-- Modal de Éxito -->
+    <div id="successModal" class="fixed inset-0 bg-slate-950/90 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="glass p-10 rounded-[2.5rem] max-w-sm w-full text-center border-2 border-sky-500 shadow-2xl">
+            <div class="w-20 h-20 bg-sky-500/20 text-sky-400 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-lg">
+                <i class="fa-solid fa-check-double"></i>
             </div>
-
-            <button onclick="window.print()" class="mt-12 no-print bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-full text-[11px] font-black uppercase transition border border-slate-600 shadow-lg mx-auto">
-                <i class="fa-solid fa-print mr-2"></i> IMPRIMIR 
+            <h3 class="text-2xl font-bold mb-4 uppercase italic">¡Reporte Enviado!</h3>
+            <p class="text-slate-400 mb-8 text-sm leading-relaxed">
+                Gracias por tu compromiso con la excelencia. Tu novedad ha sido registrada en el Sistema de Gestión de Calidad.
+            </p>
+            <button onclick="closeModal()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-black py-4 rounded-2xl transition-all uppercase tracking-widest shadow-lg shadow-sky-900/40">
+                Aceptar
             </button>
         </div>
     </div>
 
-    <!-- Éxito -->
-    <div id="successMod" class="fixed inset-0 bg-slate-950/95 hidden items-center justify-center p-4 z-50 backdrop-blur-xl">
-        <div class="glass p-12 rounded-[4rem] max-w-sm w-full text-center border-2 border-blue-500">
-            <div class="w-24 h-24 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-8 text-4xl shadow-xl shadow-blue-600/40">
-                <i class="fa-solid fa-check"></i>
-            </div>
-            <h3 class="text-3xl font-black mb-4 uppercase italic text-white">¡RECIBIDO!</h3>
-            <p class="text-slate-400 mb-10 text-sm">Tu reporte ha sido enviado con éxito a la base de datos de Calidad.</p>
-            <button onclick="location.reload()" class="w-full bg-white text-slate-950 font-black py-5 rounded-[2rem] hover:bg-blue-400 transition-all uppercase tracking-widest text-xs shadow-xl">FINALIZAR</button>
-        </div>
-    </div>
-
     <script>
-        // --- FIREBASE CONFIG ---
-        const firebaseConfig = JSON.parse(__firebase_config);
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'tn-quality-system';
-
-        let photoBase64 = null;
-        let qr = null;
-
-        async function initSession() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await auth.signInWithCustomToken(__initial_auth_token);
-                } else { await auth.signInAnonymously(); }
-                console.log("Acceso anónimo listo.");
-                
-                // Intento inicial de QR con URL actual (puede ser blob)
-                renderQR(window.location.href);
-            } catch (e) { console.error(e); }
-        }
-
-        function renderQR(text) {
-            const qrBox = document.getElementById("qrcode");
-            qrBox.innerHTML = "";
-            // Filtro para URLs temporales
-            let cleanText = text;
-            if (cleanText.includes('blob:') || cleanText.length > 350) {
-                cleanText = "https://tn-logistics.com/sgc-buzon"; // Placeholder inicial
-            }
-            
-            qr = new QRCode(qrBox, { 
-                text: cleanText, 
-                width: 240, height: 240, 
-                colorDark : "#0f172a", colorLight : "#ffffff", 
-                correctLevel : QRCode.CorrectLevel.H 
-            });
-        }
-
-        function updateQR() {
-            const newUrl = document.getElementById('publicUrl').value;
-            if (newUrl.trim() === "") return alert("Por favor pega un enlace válido.");
-            renderQR(newUrl);
-            alert("QR Actualizado con éxito. Ahora puedes imprimir el cartel.");
-        }
-
-        document.getElementById('photoInp').onchange = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                photoBase64 = ev.target.result;
-                document.getElementById('imgPrev').src = photoBase64;
-                document.getElementById('prevBox').classList.remove('hidden');
-            };
-            reader.readAsDataURL(file);
-        };
-
-        function removePhoto() {
-            photoBase64 = null;
-            document.getElementById('photoInp').value = "";
-            document.getElementById('prevBox').classList.add('hidden');
-        }
-
-        document.getElementById('noveltyForm').onsubmit = async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('subBtn');
-            const msg = document.getElementById('loadMsg');
-            
-            btn.disabled = true;
-            msg.classList.remove('hidden');
-
-            const data = {
-                fecha: document.getElementById('eventDate').value,
-                colaborador: document.getElementById('userName').value || "Anónimo",
-                departamento: document.getElementById('targetDept').value,
-                novedad: document.getElementById('description').value,
-                foto: photoBase64,
-                creado: firebase.firestore.FieldValue.serverTimestamp(),
-                uid: auth.currentUser.uid
-            };
-
-            try {
-                //artifacts/{appId}/public/data/novelties
-                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('novelties').add(data);
-                document.getElementById('successMod').classList.remove('hidden');
-                document.getElementById('successMod').classList.add('flex');
-            } catch (err) {
-                console.error(err);
-                alert("Error de red. Intenta de nuevo.");
-                btn.disabled = false;
-            } finally { msg.classList.add('hidden'); }
-        };
-
+        // Establecer fecha actual por defecto
         document.getElementById('eventDate').valueAsDate = new Date();
-        initSession();
+
+        function updateFileName() {
+            const input = document.getElementById('photos');
+            const label = document.getElementById('fileCount');
+            if (input.files.length > 0) {
+                label.textContent = `${input.files.length} archivo(s) seleccionado(s)`;
+                label.classList.add('text-sky-400', 'font-bold');
+            } else {
+                label.textContent = 'Formatos: JPG, PNG';
+                label.classList.remove('text-sky-400', 'font-bold');
+            }
+        }
+
+        document.getElementById('noveltyForm').onsubmit = function(e) {
+            e.preventDefault();
+            // Mostrar modal de éxito
+            document.getElementById('successModal').classList.remove('hidden');
+            document.getElementById('successModal').classList.add('flex');
+            
+            // Reiniciar formulario
+            this.reset();
+            document.getElementById('eventDate').valueAsDate = new Date();
+            updateFileName();
+        };
+
+        function closeModal() {
+            document.getElementById('successModal').classList.remove('flex');
+            document.getElementById('successModal').classList.add('hidden');
+        }
     </script>
 </body>
 </html>

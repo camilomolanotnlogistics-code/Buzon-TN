@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzón de Novedades - TN Logistics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs para persistencia inmediata y anónima -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        body { font-family: 'Urbanist', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .motivational-text { font-family: 'Urbanist', sans-serif; font-weight: 800; }
+        
+        input, textarea, select { 
+            background: #1e293b !important; 
+            border: 1px solid #334155 !important; 
+            color: white !important; 
+            font-size: 16px !important;
+        }
+
+        #qrcode img { display: block; margin: 0 auto; border-radius: 1.5rem; }
+
+        @media print {
+            .no-print { display: none !important; }
+            .print-area { display: block !important; color: black !important; background: white !important; width: 100% !important; }
+            body { background: white !important; }
+            .glass { background: white !important; border: 2px solid #000 !important; }
+            #qrcode { border: 2px solid #000 !important; padding: 10px !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4 md:p-8">
+
+    <!-- Header No-Print -->
+    <div class="w-full max-w-2xl mb-8 text-center no-print">
+        <div class="mb-4">
+            <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center text-white text-3xl font-bold mx-auto shadow-lg shadow-blue-500/20">TN</div>
+        </div>
+        <h1 class="text-3xl font-bold text-white mb-1 uppercase tracking-tighter">TN Logistics</h1>
+        <p class="text-blue-400 font-semibold uppercase tracking-widest text-xs italic">Buzón de Mejora Continua</p>
+    </div>
+
+    <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        
+        <!-- Formulario de Registro -->
+        <div class="glass p-8 rounded-[2.5rem] shadow-2xl no-print border-t-4 border-blue-500">
+            <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-pen-nib text-blue-400"></i>
+                Registrar Novedad o Sugerencia
+            </h2>
+            
+            <form id="noveltyForm" class="space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Fecha</label>
+                        <input type="date" id="eventDate" required class="w-full p-4 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Nombre (Opcional)</label>
+                        <input type="text" id="userName" placeholder="Anónimo" class="w-full p-4 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Departamento Destino</label>
+                    <select id="targetDept" required class="w-full p-4 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                        <option value="">Seleccione el departamento...</option>
+                        <option value="Calidad">Calidad (ISO/C-TPAT)</option>
+                        <option value="Operaciones">Operaciones / Patio</option>
+                        <option value="RH">Recursos Humanos</option>
+                        <option value="Direccion">Dirección General</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Descripción</label>
+                    <textarea id="description" rows="4" required placeholder="Escribe aquí tu sugerencia o novedad..." class="w-full p-4 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"></textarea>
+                </div>
+
+                <!-- Foto Sin Registro -->
+                <div class="p-5 bg-slate-800/50 rounded-[2rem] border-2 border-dashed border-slate-700">
+                    <label class="block text-[10px] font-black text-blue-400 uppercase mb-3 tracking-widest text-center">Evidencia Fotográfica (Opcional)</label>
+                    <div class="flex flex-col items-center gap-4">
+                        <label for="photoInp" class="w-full bg-slate-900 hover:bg-slate-700 text-white text-center py-4 rounded-2xl text-xs font-black cursor-pointer transition border border-slate-700">
+                            <i class="fa-solid fa-camera mr-2 text-blue-400"></i> SUBIR O TOMAR FOTO
+                        </label>
+                        <input type="file" id="photoInp" accept="image/*" class="hidden">
+                        <div id="prevBox" class="hidden relative w-full h-48 rounded-2xl bg-black border border-slate-600 overflow-hidden shadow-2xl">
+                            <img id="imgPrev" class="w-full h-full object-contain">
+                            <button type="button" onclick="removePhoto()" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loadMsg" class="hidden text-center py-2 text-xs text-blue-400 font-black animate-pulse uppercase tracking-widest">
+                    Enviando a la nube de TN...
+                </div>
+
+                <button type="submit" id="subBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-[2rem] shadow-xl transition-all active:scale-95 uppercase tracking-widest text-sm">
+                    Enviar Reporte
+                </button>
+            </form>
+        </div>
+
+        <!-- Área de Cartel y QR -->
+        <div class="glass p-10 rounded-[3rem] text-center flex flex-col justify-center border-2 border-slate-800 print-area relative">
+            
+            <!-- Configurador de URL (Solo visible en pantalla para ti) -->
+            <div class="no-print mb-8 p-4 bg-blue-900/30 rounded-2xl border border-blue-500/30 text-left">
+                <label class="block text-[9px] font-black text-blue-300 uppercase mb-2">Configuración de Difusión:</label>
+                <div class="flex gap-2">
+                    <input type="text" id="publicUrl" placeholder="Pega aquí el enlace de compartir..." class="flex-1 text-[10px] p-2 rounded-lg bg-slate-900 border-slate-700">
+                    <button onclick="updateQR()" class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded-lg font-bold">Actualizar QR</button>
+                </div>
+                <p class="text-[8px] text-slate-500 mt-2 italic">Si el QR falla, pega el enlace de "Compartir" de este documento aquí.</p>
+            </div>
+
+            <div id="qrcode" class="bg-white p-8 rounded-[3rem] shadow-2xl inline-block mx-auto mb-10 border-4 border-blue-600"></div>
+            
+            <div class="max-w-md mx-auto">
+                <p class="motivational-text text-2xl md:text-3xl italic leading-tight text-white mb-8">
+                    "Tu voz es la clave de nuestra excelencia. Reporta con confianza, construyamos juntos una empresa más segura y eficiente."
+                </p>
+                <div class="h-1.5 w-16 bg-blue-600 mx-auto mb-8 rounded-full"></div>
+                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-[0.2em] leading-relaxed">
+                    Tu reporte es 100% anónimo y llega directamente al Departamento de Calidad.
+                </p>
+            </div>
+
+            <button onclick="window.print()" class="mt-12 no-print bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-full text-[11px] font-black uppercase transition border border-slate-600 shadow-lg mx-auto">
+                <i class="fa-solid fa-print mr-2"></i> IMPRIMIR 
+            </button>
+        </div>
+    </div>
+
+    <!-- Éxito -->
+    <div id="successMod" class="fixed inset-0 bg-slate-950/95 hidden items-center justify-center p-4 z-50 backdrop-blur-xl">
+        <div class="glass p-12 rounded-[4rem] max-w-sm w-full text-center border-2 border-blue-500">
+            <div class="w-24 h-24 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-8 text-4xl shadow-xl shadow-blue-600/40">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="text-3xl font-black mb-4 uppercase italic text-white">¡RECIBIDO!</h3>
+            <p class="text-slate-400 mb-10 text-sm">Tu reporte ha sido enviado con éxito a la base de datos de Calidad.</p>
+            <button onclick="location.reload()" class="w-full bg-white text-slate-950 font-black py-5 rounded-[2rem] hover:bg-blue-400 transition-all uppercase tracking-widest text-xs shadow-xl">FINALIZAR</button>
+        </div>
+    </div>
+
+    <script>
+        // --- FIREBASE CONFIG ---
+        const firebaseConfig = JSON.parse(__firebase_config);
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'tn-quality-system';
+
+        let photoBase64 = null;
+        let qr = null;
+
+        async function initSession() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await auth.signInWithCustomToken(__initial_auth_token);
+                } else { await auth.signInAnonymously(); }
+                console.log("Acceso anónimo listo.");
+                
+                // Intento inicial de QR con URL actual (puede ser blob)
+                renderQR(window.location.href);
+            } catch (e) { console.error(e); }
+        }
+
+        function renderQR(text) {
+            const qrBox = document.getElementById("qrcode");
+            qrBox.innerHTML = "";
+            // Filtro para URLs temporales
+            let cleanText = text;
+            if (cleanText.includes('blob:') || cleanText.length > 350) {
+                cleanText = "https://tn-logistics.com/sgc-buzon"; // Placeholder inicial
+            }
+            
+            qr = new QRCode(qrBox, { 
+                text: cleanText, 
+                width: 240, height: 240, 
+                colorDark : "#0f172a", colorLight : "#ffffff", 
+                correctLevel : QRCode.CorrectLevel.H 
+            });
+        }
+
+        function updateQR() {
+            const newUrl = document.getElementById('publicUrl').value;
+            if (newUrl.trim() === "") return alert("Por favor pega un enlace válido.");
+            renderQR(newUrl);
+            alert("QR Actualizado con éxito. Ahora puedes imprimir el cartel.");
+        }
+
+        document.getElementById('photoInp').onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                photoBase64 = ev.target.result;
+                document.getElementById('imgPrev').src = photoBase64;
+                document.getElementById('prevBox').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        };
+
+        function removePhoto() {
+            photoBase64 = null;
+            document.getElementById('photoInp').value = "";
+            document.getElementById('prevBox').classList.add('hidden');
+        }
+
+        document.getElementById('noveltyForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('subBtn');
+            const msg = document.getElementById('loadMsg');
+            
+            btn.disabled = true;
+            msg.classList.remove('hidden');
+
+            const data = {
+                fecha: document.getElementById('eventDate').value,
+                colaborador: document.getElementById('userName').value || "Anónimo",
+                departamento: document.getElementById('targetDept').value,
+                novedad: document.getElementById('description').value,
+                foto: photoBase64,
+                creado: firebase.firestore.FieldValue.serverTimestamp(),
+                uid: auth.currentUser.uid
+            };
+
+            try {
+                //artifacts/{appId}/public/data/novelties
+                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('novelties').add(data);
+                document.getElementById('successMod').classList.remove('hidden');
+                document.getElementById('successMod').classList.add('flex');
+            } catch (err) {
+                console.error(err);
+                alert("Error de red. Intenta de nuevo.");
+                btn.disabled = false;
+            } finally { msg.classList.add('hidden'); }
+        };
+
+        document.getElementById('eventDate').valueAsDate = new Date();
+        initSession();
+    </script>
+</body>
+</html>
